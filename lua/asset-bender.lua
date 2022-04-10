@@ -78,9 +78,12 @@ function M.check_start_javascript_lsp()
 end
 
 function M.setup()
+
+    log.info('setup called')
     local group = vim.api.nvim_create_augroup("asset-bender.nvim",
                                               {clear = true})
 
+    log.info('group created')
     vim.api.nvim_create_autocmd("BufReadPost", {
         group = group,
         desc = "asset-bender.nvim will check if it needs to start a new process on the BufReadPost event",
@@ -94,6 +97,7 @@ function M.setup()
         end
     })
 
+    log.info('autocommand created')
     log.info('Asset bender plugin intialized')
 
 end
