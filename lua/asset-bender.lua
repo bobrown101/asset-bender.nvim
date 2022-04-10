@@ -5,9 +5,9 @@ local log = require('plenary.log').new({
     use_console = false
 })
 
-local path_join = require('asset-bender-tools').path_join;
-local buffer_find_root_dir = require('asset-bender-tools').buffer_find_root_dir;
-local is_dir = require('asset-bender-tools').is_dir;
+local path_join = require('asset-bender-utils').path_join;
+local buffer_find_root_dir = require('asset-bender-utils').buffer_find_root_dir;
+local is_dir = require('asset-bender-utils').is_dir;
 local filetypes = require('asset-bender-filetypes').defaultConfig;
 
 -- A table to store our root_dir to client_id lookup. We want one LSP per
