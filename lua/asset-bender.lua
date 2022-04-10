@@ -101,3 +101,5 @@ function M.setup()
     log.info('Asset bender plugin intialized')
 
 end
+
+return M
