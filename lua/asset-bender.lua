@@ -7,8 +7,8 @@ local log = require('plenary.log').new({
 
 local path_join = require('asset-bender-tools').path_join;
 local buffer_find_root_dir = require('asset-bender-tools').buffer_find_root_dir;
-local filetypes = require('asset-bender-filetypes').defaultConfig;
 local is_dir = require('asset-bender-tools').is_dir;
+local filetypes = require('asset-bender-filetypes').defaultConfig;
 
 -- A table to store our root_dir to client_id lookup. We want one LSP per
 -- root directory, and this is how we assert that.
@@ -83,6 +83,7 @@ function M.setup()
 
     vim.api.nvim_create_autocmd("BufReadPost", {
         group = group,
+        desc = "asset-bender.nvim will check if it needs to start a new process on the BufReadPost event",
         callback = function()
             local data = {
                 buf = vim.fn.expand("<abuf>"),
