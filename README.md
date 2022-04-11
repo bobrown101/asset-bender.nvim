@@ -6,8 +6,10 @@ Automatically start an asset-bender process
 ```lua
 require("packer").startup(function()
 
+    use({"bobrown101/plugin-utils.nvim"})
     use({
         "bobrown101/asset-bender.nvim",
+        requires = {"bobrown101/plugin-utils.nvim"},
         config = function() require("asset-bender").setup({}) end
     })
 
