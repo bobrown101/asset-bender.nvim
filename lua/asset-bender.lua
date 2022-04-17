@@ -65,8 +65,9 @@ local function startAssetBenderProcess(rootsArray)
         command = 'bpx',
         args = baseArgsWithWorkspaces,
         on_exit = function(j, return_val)
-            log.info(return_val)
-            log.info(j:result())
+            jobLogger('process exited')
+            jobLogger(return_val)
+            jobLogger(j:result())
         end,
         on_stdout = function(error, data) jobLogger(data) end,
         on_stderr = function(error, data) jobLogger(data) end
