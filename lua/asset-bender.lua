@@ -25,7 +25,7 @@ end
 local function getLogPath() return vim.lsp.get_log_path() end
 
 local function startAssetBenderProcess(rootsArray)
-    local workspaces = rootsArray.toString()
+    local workspaces = tostring(rootsArray)
     log.info('Asset Bender starting new client')
     log.info('starting NEW asset-bender with workspaces of "' ..
                  vim.inspect(workspaces))
