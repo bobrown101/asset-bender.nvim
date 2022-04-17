@@ -160,7 +160,8 @@ function M.reset()
     current_project_roots = {}
     shutdownCurrentProcess()
     vim.cmd('LspStart')
-    vim.cmd('e')
+    print(
+        'Open a new file, or re-open an existing one with ":e" for asset-bender.nvim to start a new process')
 end
 
 return M
