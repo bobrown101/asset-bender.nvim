@@ -34,13 +34,16 @@ local function reduce_array(arr, fn, init)
     return acc
 end
 
+function trimString(s) return s:match("^%s*(.-)%s*$") end
+
 local function getLogPath() return vim.lsp.get_log_path() end
 
 local function startAssetBenderProcess(rootsArray)
-    local workspaces = reduce_array(rootsArray, function(accumulator, current)
+    local workspaces = trimString(reduce_array(rootsArray,
+                                               function(accumulator, current)
         return accumulator .. " " .. current
-    end, "")
-
+    end, ""))
+    print(vim.inspect(workspaces))
     log.info('Asset Bender starting new client')
     log.info('starting NEW asset-bender with workspaces of:')
     log.info(vim.inspect(workspaces))
