@@ -58,10 +58,7 @@ local function startAssetBenderProcess(rootsArray)
             log.info(return_val)
             log.info(j:result())
         end,
-        on_stdout = function(error, data)
-            log.info(error)
-            log.info(data)
-        end,
+        on_stdout = function(error, data) log.info(data) end,
         on_stderr = function(error, data) log.info(data) end
     }):start()
 
