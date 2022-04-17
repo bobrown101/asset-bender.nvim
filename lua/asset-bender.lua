@@ -99,7 +99,7 @@ function M.check_start_javascript_lsp()
             'asset-bender.nvim - detected new root, restarting asset-bender')
         if (current_process) then
             log.info('shutting down current process')
-            current_process.shutdown()
+            current_process:shutdown()
             current_process = nil
         end
 
