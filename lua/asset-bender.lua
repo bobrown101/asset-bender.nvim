@@ -37,13 +37,13 @@ end
 local function getLogPath() return vim.lsp.get_log_path() end
 
 local function startAssetBenderProcess(rootsArray)
-    local workspaces = reduce_array(rootsArray, function(accumulator, current)
+    local workspaces = reduce_array(rootsArray, function(accumulator, current, "")
         return accumulator .. " " .. current
     end)
 
     log.info('Asset Bender starting new client')
-    log.info('starting NEW asset-bender with workspaces of "' ..
-                 vim.inspect(workspaces))
+    log.info('starting NEW asset-bender with workspaces of:')
+    log.info(vim.inspect(workspaces))
 
     local newJob = Job:new({
         command = 'bpx',
