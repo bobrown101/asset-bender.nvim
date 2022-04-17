@@ -57,8 +57,10 @@ local function startAssetBenderProcess(rootsArray)
                  vim.inspect(baseArgsWithWorkspaces))
 
     local function jobLogger(data)
-        log.info('asset-bender process #' .. jobId .. ' - ' .. data)
-
+        if (data) then
+            local prefix = 'asset-bender process #' .. jobId .. ' - '
+            log.info(prefix .. data)
+        end
     end
 
     local newJob = Job:new({
