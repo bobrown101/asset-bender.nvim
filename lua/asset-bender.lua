@@ -39,21 +39,24 @@ function trimString(s) return s:match("^%s*(.-)%s*$") end
 local function getLogPath() return vim.lsp.get_log_path() end
 
 local function startAssetBenderProcess(rootsArray)
-    local workspaces = trimString(reduce_array(rootsArray,
-                                               function(accumulator, current)
-        return accumulator .. " " .. current
-    end, ""))
-    print(vim.inspect(workspaces))
     log.info('Asset Bender starting new client')
-    log.info('starting NEW asset-bender with workspaces of:')
-    log.info(vim.inspect(workspaces))
+
+    local baseArgs = {
+        'asset-bender', 'reactor', 'host', '--host-most-recent', 100
+    }
+
+    local baseArgsWithWorkspaces = reduce_array(rootsArray,
+                                                function(accumulator, current)
+        table.insert(current)
+        return accumulator
+    end, baseArgs)
+
+    log.info('Starting NEW asset-bender with args, ' ..
+                 vim.inspect(baseArgsWithWorkspaces))
 
     local newJob = Job:new({
         command = 'bpx',
-        args = {
-            'asset-bender', 'reactor', 'host', '--host-most-recent', 100,
-            workspaces
-        },
+        args = baseArgsWithWorkspaces,
         on_exit = function(j, return_val)
             log.info(return_val)
             log.info(j:result())
