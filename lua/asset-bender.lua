@@ -160,6 +160,7 @@ function M.reset()
     current_project_roots = {}
     shutdownCurrentProcess()
     vim.cmd('LspStart')
+    vim.cmd('e')
 end
 
 return M
