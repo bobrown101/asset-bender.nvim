@@ -45,7 +45,6 @@ local function shutdownCurrentProcess()
     if (current_process) then
         current_process:shutdown()
         current_process = nil
-        shutdownCurrentProcess()
     end
 end
 
