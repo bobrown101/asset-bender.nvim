@@ -34,6 +34,8 @@ local function reduce_array(arr, fn, init)
     return acc
 end
 
+local jobId = 0
+
 function trimString(s) return s:match("^%s*(.-)%s*$") end
 
 local function getLogPath() return vim.lsp.get_log_path() end
@@ -54,6 +56,11 @@ local function startAssetBenderProcess(rootsArray)
     log.info('Starting NEW asset-bender with args, ' ..
                  vim.inspect(baseArgsWithWorkspaces))
 
+    local function jobLogger(data)
+        log.info('asset-bender process #' .. jobId .. ' - ' .. data)
+
+    end
+
     local newJob = Job:new({
         command = 'bpx',
         args = baseArgsWithWorkspaces,
@@ -61,11 +68,13 @@ local function startAssetBenderProcess(rootsArray)
             log.info(return_val)
             log.info(j:result())
         end,
-        on_stdout = function(error, data) log.info(data) end,
-        on_stderr = function(error, data) log.info(data) end
+        on_stdout = function(error, data) jobLogger(data) end,
+        on_stderr = function(error, data) jobLogger(data) end
     })
 
     newJob:start()
+
+    jobId = jobId + 1
 
     return newJob
 end
