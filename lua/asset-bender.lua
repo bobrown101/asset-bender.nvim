@@ -14,9 +14,13 @@ local is_dir = require('bobrown101.plugin-utils').is_dir;
 
 local filetypes = require('asset-bender-filetypes').defaultConfig;
 
--- A table to store our root_dir to client_id lookup. We want one LSP per
--- root directory, and this is how we assert that.
-local javascript_lsps = {}
+local current_project_roots = {}
+local current_process = nil
+
+local function has_value(tab, val)
+    for index, value in ipairs(tab) do if value == val then return true end end
+    return false
+end
 
 local function getLogPath() return vim.lsp.get_log_path() end
 
@@ -71,19 +75,20 @@ function M.check_start_javascript_lsp()
         return
     end
 
-    -- Check if we have a client alredy or start and store it.
-    local client_id = javascript_lsps[root_dir]
-    if client_id then log.info('already found a client_id, skipping') end
-
-    if not client_id then
-        client_id = startAssetBenderProcess(root_dir)
-        javascript_lsps[root_dir] = client_id
+    -- if the current root_dir is not in the current_project_roots, then we must stop the current process and start a new one with the new root
+    if (not has_value(current_project_roots, root_dir)) then
+        print('asset-bender.nvim - detected new root, restarting asset-bender')
+        if (current_process) then
+            process.shutdown()
+            current_process = nil
+        end
+        table.insert(current_project_roots, root_dir)
+        current_process = startAssetBenderProcess(root_dir);
     end
 end
 
-function M.setup()
-
-    log.info('setup called')
+local function setupAutocommands()
+    log.info('setting up autocommands')
     local group = vim.api.nvim_create_augroup("asset-bender.nvim",
                                               {clear = true})
 
@@ -103,7 +108,8 @@ function M.setup()
 
     log.info('autocommand created')
     log.info('Asset bender plugin intialized')
-
 end
+
+function M.setup() setupAutocommands() end
 
 return M
