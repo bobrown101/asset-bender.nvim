@@ -1,5 +1,6 @@
 # asset-bender.nvim
-Automatically start an asset-bender process
+Automatically start an asset-bender process if needed.
+Works with multiple project roots. Identifies project roots by the presense of a .git folder.
 
 ## Setup
 
@@ -23,7 +24,7 @@ This autocommand will then do the following:
 2. Find the closest git directory (signifying the project root)
 3. Append the project root to an internal array keeping track of "which project roots should I run asset-bender for?"
 4. If the currently running asset-bender process satisfies the new root, nothing happens
-5. If the currently running asset-bender process does not satify the new root, it will quit the current process and start a new one
+5. If the currently running asset-bender process does not satify the new root, it will quit the current process and start a new one serving for all root directories kept track of in the internal array
 
 
 ## Reset
