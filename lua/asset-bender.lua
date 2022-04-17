@@ -66,9 +66,9 @@ local function startAssetBenderProcess(rootsArray)
     local newJob = Job:new({
         command = 'bpx',
         args = baseArgsWithWorkspaces,
-        on_exit = function(code, signal)
+        on_exit = function(j, signal)
             jobLogger('process exited')
-            jobLogger(code)
+            jobLogger(j:result())
             jobLogger(signal)
         end,
         on_stdout = function(error, data) jobLogger(data) end,
