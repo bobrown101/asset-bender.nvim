@@ -47,7 +47,7 @@ local function startAssetBenderProcess(rootsArray)
 
     local baseArgsWithWorkspaces = reduce_array(rootsArray,
                                                 function(accumulator, current)
-        table.insert(current)
+        table.insert(accumulator, current)
         return accumulator
     end, baseArgs)
 
