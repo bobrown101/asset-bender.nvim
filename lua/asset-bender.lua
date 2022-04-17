@@ -100,7 +100,7 @@ function M.check_start_javascript_lsp()
 
         table.insert(current_project_roots, root_dir)
         current_process = startAssetBenderProcess(current_project_roots);
-        log.info('started new process, 'vim.inspect(current_process))
+        log.info('started new process, ' .. vim.inspect(current_process))
     end
 end
 
