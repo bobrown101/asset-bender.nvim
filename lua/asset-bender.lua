@@ -90,14 +90,17 @@ function M.check_start_javascript_lsp()
 
     -- if the current root_dir is not in the current_project_roots, then we must stop the current process and start a new one with the new root
     if (not has_value(current_project_roots, root_dir)) then
-        print('asset-bender.nvim - detected new root, restarting asset-bender')
+        log.info(
+            'asset-bender.nvim - detected new root, restarting asset-bender')
         if (current_process) then
+            log.info('shutting down current process')
             process.shutdown()
             current_process = nil
         end
-        table.insert(current_project_roots, root_dir)
 
+        table.insert(current_project_roots, root_dir)
         current_process = startAssetBenderProcess(current_project_roots);
+        log.info('started new process, 'vim.inspect(current_process))
     end
 end
 
