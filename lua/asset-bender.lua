@@ -40,6 +40,15 @@ function trimString(s) return s:match("^%s*(.-)%s*$") end
 
 local function getLogPath() return vim.lsp.get_log_path() end
 
+local function shutdownCurrentProcess()
+    log.info('shutting down current process')
+    if (current_process) then
+        current_process:shutdown()
+        current_process = nil
+        shutdownCurrentProcess()
+    end
+end
+
 local function startAssetBenderProcess(rootsArray)
     log.info('Asset Bender starting new client')
 
@@ -108,15 +117,14 @@ function M.check_start_javascript_lsp()
     -- if the current root_dir is not in the current_project_roots, then we must stop the current process and start a new one with the new root
     if (not has_value(current_project_roots, root_dir)) then
         log.info(
-            'asset-bender.nvim - detected new root, restarting asset-bender')
-        if (current_process) then
-            log.info('shutting down current process')
-            current_process:shutdown()
-            current_process = nil
-        end
+            'asset-bender.nvim - detected new root, shutting down current process and starting another')
+
+        shutdownCurrentProcess()
 
         table.insert(current_project_roots, root_dir)
+
         current_process = startAssetBenderProcess(current_project_roots);
+
         log.info('started new process, ' .. vim.inspect(current_process))
     end
 end
@@ -145,5 +153,12 @@ local function setupAutocommands()
 end
 
 function M.setup() setupAutocommands() end
+
+function M.reset()
+    log.info('"reset" called - cancelling current process and resetting roots')
+
+    current_project_roots = {}
+    shutdownCurrentProcess()
+end
 
 return M
