@@ -59,10 +59,7 @@ local function startAssetBenderProcess(rootsArray)
             log.info(error)
             log.info(data)
         end,
-        on_stderr = function(error, data)
-            log.info(error)
-            log.info(data)
-        end
+        on_stderr = function(error, data) log.info(data) end
     }):start()
 
     return newJob
