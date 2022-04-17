@@ -59,17 +59,17 @@ local function startAssetBenderProcess(rootsArray)
     local function jobLogger(data)
         if (data ~= nil) then
             local prefix = 'asset-bender process #' .. jobId .. ' - '
-            log.info(prefix .. data)
+            log.info(prefix .. vim.inspect(data))
         end
     end
 
     local newJob = Job:new({
         command = 'bpx',
         args = baseArgsWithWorkspaces,
-        on_exit = function(j, return_val)
+        on_exit = function(code, signal)
             jobLogger('process exited')
-            jobLogger(return_val)
-            jobLogger(j:result())
+            jobLogger(code)
+            jobLogger(signal)
         end,
         on_stdout = function(error, data) jobLogger(data) end,
         on_stderr = function(error, data) jobLogger(data) end
