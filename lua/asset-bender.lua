@@ -24,7 +24,8 @@ end
 
 local function getLogPath() return vim.lsp.get_log_path() end
 
-local function startAssetBenderProcess(workspaces)
+local function startAssetBenderProcess(rootsArray)
+    local workspaces = rootArray.toString()
     log.info('Asset Bender starting new client')
     log.info('starting NEW asset-bender with workspaces of "' ..
                  vim.inspect(workspaces))
@@ -83,7 +84,8 @@ function M.check_start_javascript_lsp()
             current_process = nil
         end
         table.insert(current_project_roots, root_dir)
-        current_process = startAssetBenderProcess(root_dir);
+
+        current_process = startAssetBenderProcess(current_project_roots);
     end
 end
 
