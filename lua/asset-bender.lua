@@ -22,10 +22,25 @@ local function has_value(tab, val)
     return false
 end
 
+local function reduce_array(arr, fn, init)
+    local acc = init
+    for k, v in ipairs(arr) do
+        if 1 == k and not init then
+            acc = v
+        else
+            acc = fn(acc, v)
+        end
+    end
+    return acc
+end
+
 local function getLogPath() return vim.lsp.get_log_path() end
 
 local function startAssetBenderProcess(rootsArray)
-    local workspaces = tostring(rootsArray)
+    local workspaces = reduce_array(rootsArray, function(accumulator, current)
+        return accumulator .. " " .. current
+    end)
+
     log.info('Asset Bender starting new client')
     log.info('starting NEW asset-bender with workspaces of "' ..
                  vim.inspect(workspaces))
