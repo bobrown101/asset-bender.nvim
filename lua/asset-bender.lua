@@ -63,7 +63,9 @@ local function startAssetBenderProcess(rootsArray)
         end,
         on_stdout = function(error, data) log.info(data) end,
         on_stderr = function(error, data) log.info(data) end
-    }):start()
+    })
+
+    newJob:start()
 
     return newJob
 end
@@ -97,7 +99,7 @@ function M.check_start_javascript_lsp()
             'asset-bender.nvim - detected new root, restarting asset-bender')
         if (current_process) then
             log.info('shutting down current process')
-            process.shutdown()
+            current_process.shutdown()
             current_process = nil
         end
 
