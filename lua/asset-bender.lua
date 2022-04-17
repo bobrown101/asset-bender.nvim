@@ -154,10 +154,12 @@ end
 function M.setup() setupAutocommands() end
 
 function M.reset()
-    log.info('"reset" called - cancelling current process and resetting roots')
-
+    log.info(
+        '"reset" called - running LspStop, cancelling current asset-bender process, resetting roots, and running LspStart')
+    vim.cmd('LspStop')
     current_project_roots = {}
     shutdownCurrentProcess()
+    vim.cmd('LspStart')
 end
 
 return M
