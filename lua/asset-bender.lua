@@ -1,5 +1,4 @@
 local M = {}
-local Job = require 'plenary.job'
 local log = require('plenary.log').new({
     plugin = 'asset-bender',
     use_console = false
@@ -14,8 +13,11 @@ local is_dir = require('bobrown101.plugin-utils').is_dir;
 
 local filetypes = require('asset-bender-filetypes').defaultConfig;
 
+local uv = vim.loop
+
 local current_project_roots = {}
-local current_process = nil
+local handle = nil
+local pid = nil
 
 local function has_value(tab, val)
     for index, value in ipairs(tab) do if value == val then return true end end
@@ -41,10 +43,11 @@ function trimString(s) return s:match("^%s*(.-)%s*$") end
 local function getLogPath() return vim.lsp.get_log_path() end
 
 local function shutdownCurrentProcess()
-    log.info('shutting down current process')
-    if (current_process) then
-        current_process:shutdown()
-        current_process = nil
+    if (pid) then
+        log.info('Shutting down current process: ' .. pid)
+        uv.kill(-pid, uv.constants.SIGTERM)
+        pid = nil
+        handle = nil
     end
 end
 
@@ -52,7 +55,7 @@ local function startAssetBenderProcess(rootsArray)
     log.info('Asset Bender starting new client')
 
     local baseArgs = {
-        'asset-bender', 'reactor', 'host', '--host-most-recent', 100
+        'reactor', 'host', '--host-most-recent', 100
     }
 
     local baseArgsWithWorkspaces = reduce_array(rootsArray,
@@ -71,23 +74,33 @@ local function startAssetBenderProcess(rootsArray)
         end
     end
 
-    local newJob = Job:new({
-        command = 'bpx',
-        args = baseArgsWithWorkspaces,
-        on_exit = function(j, signal)
-            jobLogger('process exited')
-            jobLogger(j:result())
-            jobLogger(signal)
-        end,
-        on_stdout = function(error, data) jobLogger(data) end,
-        on_stderr = function(error, data) jobLogger(data) end
-    })
+    local stderr = uv.new_pipe()
+    local stdout = uv.new_pipe()
 
-    newJob:start()
+    local handle, pid = uv.spawn('bend', {
+        args = baseArgsWithWorkspaces,
+        detached = true,
+        stdio = { stdout, stderr }
+    }, function(code, signal)
+        log.info('Process exited with code, signal: ', code, signal)
+    end)
+
+    uv.read_start(stderr, function(err, data)
+        assert(not err, err)
+        if data then
+            log.info(data)
+        end
+    end)
+
+    uv.read_start(stdout, function(err, data)
+        if data then
+            log.info(data)
+        end
+    end)
 
     jobId = jobId + 1
 
-    return newJob
+    return handle, pid
 end
 
 function M.check_start_javascript_lsp()
@@ -122,9 +135,9 @@ function M.check_start_javascript_lsp()
 
         table.insert(current_project_roots, root_dir)
 
-        current_process = startAssetBenderProcess(current_project_roots);
+        handle, pid = startAssetBenderProcess(current_project_roots);
 
-        log.info('started new process, ' .. vim.inspect(current_process))
+        log.info('started new process: ', pid)
     end
 end
 
@@ -147,8 +160,19 @@ local function setupAutocommands()
         end
     })
 
+    vim.api.nvim_create_autocmd('VimLeavePre', {
+        group = group,
+        callback = function()
+            vim.schedule(M.stop)
+        end
+    })
+
     log.info('autocommand created')
     log.info('Asset bender plugin intialized')
+end
+
+function M.stop()
+    shutdownCurrentProcess()
 end
 
 function M.setup() setupAutocommands() end
