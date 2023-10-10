@@ -2,7 +2,8 @@ local M = {}
 local Job = require("plenary.job")
 local log = require("vim.lsp.log")
 
-local path_join = require("bobrown101.plugin-utils").path_join
+local find_node_modules_ancestor = require("lspconfig").util.find_node_modules_ancestor
+local path_join = require("lspconfig").util.path.join
 
 local buffer_find_root_dir = require("bobrown101.plugin-utils").buffer_find_root_dir
 
@@ -193,6 +194,85 @@ function M.reset()
 	shutdownCurrentProcess()
 	vim.cmd("LspStart")
 	print('Open a new file, or re-open an existing one with ":e" for asset-bender.nvim to start a new process')
+end
+
+function M.getTsServerPathForCurrentFile()
+	function SplitFilename(strFilename)
+		-- Returns the Path, Filename, and Extension as 3 values
+		return string.match(strFilename, "(.-)([^\\]-([^\\%.]+))$")
+	end
+	local bufnr = vim.api.nvim_get_current_buf()
+	local path = vim.api.nvim_buf_get_name(bufnr)
+
+	local unused, file, ft = SplitFilename(path)
+
+	local filetypes = {
+		["js"] = true,
+		["ts"] = true,
+		["tsx"] = true,
+		["jsx"] = true,
+	}
+
+	-- Filter which files we are considering.
+	if not filetypes[ft] then
+		log.trace(
+			"asset-bender-tsserver-notification",
+			"found this filetype that isnt what we're looking for: " .. ft .. " for buffer number: " .. bufnr
+		)
+		return "latest"
+	end
+
+	local directoryOfNodeModules = find_node_modules_ancestor(path)
+
+	if directoryOfNodeModules == "" then
+		log.trace(
+			"asset-bender-tsserver-notification",
+			"node_modules not found for current file, skipping auto-sense of hs-typescript/tsserver version"
+		)
+		return "latest"
+	end
+
+	log.trace(
+		"asset-bender-tsserver-notification",
+		"node_modules found at "
+			.. directoryOfNodeModules
+			.. " - will parse the package.json in that directory for the hs-typescript version"
+	)
+
+	local pathOfPackageJson = path_join(directoryOfNodeModules, "package.json")
+
+	local getVersionResult = vim.system({ "jq", "-r", '.bpm.deps."hs-typescript"', pathOfPackageJson }, { text = true })
+		:wait()
+
+	if getVersionResult.stderr ~= "" then
+		log.error("asset-bender-tsserver-notification", "there was an error reading hs-typescript version")
+		log.error("asset-bender-tsserver-notification", getVersionResult.stderr)
+		return "latest"
+	end
+
+	local hsTypescriptVersion = getVersionResult.stdout
+	hsTypescriptVersion = hsTypescriptVersion:gsub('"', "")
+	hsTypescriptVersion = hsTypescriptVersion:gsub("\n", "")
+	log.trace("asset-bender-tsserver-notification", "found an hs-typescript version of " .. hsTypescriptVersion)
+
+	local getHsTypescriptPathResult = vim.system(
+		{ "bpx", "--path", string.format("hs-typescript@%s", hsTypescriptVersion) },
+		{ text = true }
+	):wait()
+
+	if getHsTypescriptPathResult.stderr ~= "" then
+		log.error(
+			"asset-bender-tsserver-notification",
+			"there was an error determining the path of hs-typescript from version number: " .. hsTypescriptVersion
+		)
+		log.error("asset-bender-tsserver-notification", getHsTypescriptPathResult.stderr)
+		return "latest"
+	end
+
+	local hsTypescriptPath = getHsTypescriptPathResult.stdout
+	hsTypescriptPath = hsTypescriptPath:gsub('"', "")
+	hsTypescriptPath = hsTypescriptPath:gsub("\n", "")
+	return hsTypescriptPath
 end
 
 return M
