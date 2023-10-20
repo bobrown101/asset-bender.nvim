@@ -235,8 +235,8 @@ function M.getTsServerPathForCurrentFile()
 	log.trace(
 		"asset-bender-tsserver-notification",
 		"node_modules found at "
-		.. directoryOfNodeModules
-		.. " - will parse the package.json in that directory for the hs-typescript version"
+			.. directoryOfNodeModules
+			.. " - will parse the package.json in that directory for the hs-typescript version"
 	)
 
 	local pathOfPackageJson = path_join(directoryOfNodeModules, "package.json")
