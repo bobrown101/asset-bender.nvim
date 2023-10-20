@@ -201,6 +201,7 @@ function M.getTsServerPathForCurrentFile()
 		-- Returns the Path, Filename, and Extension as 3 values
 		return string.match(strFilename, "(.-)([^\\]-([^\\%.]+))$")
 	end
+
 	local bufnr = vim.api.nvim_get_current_buf()
 	local path = vim.api.nvim_buf_get_name(bufnr)
 
@@ -235,14 +236,15 @@ function M.getTsServerPathForCurrentFile()
 	log.trace(
 		"asset-bender-tsserver-notification",
 		"node_modules found at "
-			.. directoryOfNodeModules
-			.. " - will parse the package.json in that directory for the hs-typescript version"
+		.. directoryOfNodeModules
+		.. " - will parse the package.json in that directory for the hs-typescript version"
 	)
 
 	local pathOfPackageJson = path_join(directoryOfNodeModules, "package.json")
 
-	local getVersionResult = vim.system({ "jq", "-r", '.bpm.deps."hs-typescript"', pathOfPackageJson }, { text = true })
-		:wait()
+	local getVersionResult = Job:new(
+		{ command = "jq", args = { "-r", '.bpm.deps."hs-typescript"', pathOfPackageJson } }
+	):sync()
 
 	if getVersionResult.stderr ~= "" then
 		log.error("asset-bender-tsserver-notification", "there was an error reading hs-typescript version")
@@ -255,10 +257,9 @@ function M.getTsServerPathForCurrentFile()
 	hsTypescriptVersion = hsTypescriptVersion:gsub("\n", "")
 	log.trace("asset-bender-tsserver-notification", "found an hs-typescript version of " .. hsTypescriptVersion)
 
-	local getHsTypescriptPathResult = vim.system(
-		{ "bpx", "--path", string.format("hs-typescript@%s", hsTypescriptVersion) },
-		{ text = true }
-	):wait()
+	local getHsTypescriptPathResult = Job:new(
+		{ command = "bpx", args = { "--path", string.format("hs-typescript@%s", hsTypescriptVersion) } }
+	):sync()
 
 	if getHsTypescriptPathResult.stderr ~= "" then
 		log.error(
