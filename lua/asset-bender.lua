@@ -201,7 +201,6 @@ function M.getTsServerPathForCurrentFile()
 		-- Returns the Path, Filename, and Extension as 3 values
 		return string.match(strFilename, "(.-)([^\\]-([^\\%.]+))$")
 	end
-
 	local bufnr = vim.api.nvim_get_current_buf()
 	local path = vim.api.nvim_buf_get_name(bufnr)
 
