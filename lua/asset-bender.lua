@@ -107,10 +107,10 @@ function M.check_start_javascript_lsp()
 
 	local ft = vim.api.nvim_buf_get_option(bufnr, "filetype")
 	-- Filter which files we are considering.
-	if not filetypes[ft] then
+	if ft == nil or not filetypes[ft] then
 		log.info(
 			"asset-bender",
-			"found this filetype that isnt what we're looking for: " .. ft .. " for buffer number: " .. bufnr
+			"found this filetype that isnt what we're looking for: " .. (ft or "nil") .. " for buffer number: " .. bufnr
 		)
 		return
 	end
@@ -214,10 +214,10 @@ function M.getTsServerPathForCurrentFile()
 	}
 
 	-- Filter which files we are considering.
-	if not filetypes[ft] then
+	if ft == nil or not filetypes[ft] then
 		log.trace(
 			"asset-bender-tsserver-notification",
-			"found this filetype that isnt what we're looking for: " .. ft .. " for buffer number: " .. bufnr
+			"found this filetype that isnt what we're looking for: " .. (ft or "nil") .. " for buffer number: " .. bufnr
 		)
 		return "latest"
 	end
